@@ -190,3 +190,6 @@ test.ipynb
 TEST_RESULTS
 .vscode
 clustering.py
+TRN.py
+change_me_D1_test_mine.pkl
+change_me_D1_test.pkl

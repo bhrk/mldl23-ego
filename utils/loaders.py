@@ -81,20 +81,52 @@ class EpicKitchensDataset(data.Dataset, ABC):
 
         return frames_to_select
 
+    # def _get_val_indices(self, record, modality):
+    #     # Calculate the length of the video
+    #     video_length = record.end_frame - record.start_frame
+    
+    #     # Divide the video into num_clips segments
+    #     clip_length = video_length / self.num_clips
+    
+    #     # Select central points for each segment
+    #     central_points = [int((i + 0.5) * clip_length) for i in range(self.num_clips)]
+    
+    #     # Select num_frames_per_clip[modality] frames around each central point
+    #     frames_to_select = []
+    #     for central_point in central_points:
+    #         start_frame = central_point - self.num_frames_per_clip[modality] // 2
+    #         end_frame = central_point + self.num_frames_per_clip[modality] // 2
+    #         frames_to_select += list(range(record.start_frame + start_frame, record.start_frame + end_frame))
+    #     frames_to_select = np.array(frames_to_select) - record.start_frame
+    
+    #     return frames_to_select.tolist()
+    
     def _get_val_indices(self, record, modality):
-        # Calculate the length of the video
-        video_length = record.end_frame - record.start_frame
+        video_length=record.num_frames[modality]
+        num_centroids=self.num_clips
+        n_frames=self.num_frames_per_clip[modality]
 
-        # Calculate the number of frames to stride
-        stride_frames = record.dataset_conf['stride'] * self.num_frames_per_clip[modality]
+        sub=[range(int(i*video_length/(num_centroids+1))-int(n_frames/2), int(i*video_length/(num_centroids+1))+int(n_frames/2)) for i in range(1,num_centroids+1)]
 
-        # Calculate the starting frame index for each clip
-        start_frames = [int((i / self.num_clips) * (video_length - stride_frames)) for i in range(self.num_clips)]
+        ret = np.array(sub).flatten()
+        if not ret.size == self.num_clips * n_frames:
+            raise UserWarning(f"Invalid number of frames: it is {ret.size}, should be {self.num_clips * n_frames}")
+        return ret
 
-        # Calculate the list of frames to select for each clip
-        frames_to_select = [j for start_frame in start_frames for j in range(start_frame, start_frame + stride_frames, record.dataset_conf['stride'])]
+    # def _get_val_indices(self, record, modality):
+    #     # Calculate the length of the video
+    #     video_length = record.end_frame - record.start_frame
 
-        return frames_to_select
+    #     # Calculate the number of frames to stride
+    #     stride_frames = record.dataset_conf['stride'] * self.num_frames_per_clip[modality]
+
+    #     # Calculate the starting frame index for each clip
+    #     start_frames = [int((i / self.num_clips) * (video_length - stride_frames)) for i in range(self.num_clips)]
+
+    #     # Calculate the list of frames to select for each clip
+    #     frames_to_select = [j for start_frame in start_frames for j in range(start_frame, start_frame + stride_frames, record.dataset_conf['stride'])]
+
+    #     return frames_to_select
 
         ##################################################################
         # TODO: implement sampling for testing mode                      #
