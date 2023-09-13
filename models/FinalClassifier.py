@@ -28,8 +28,6 @@ class Classifier(nn.Module):
             nn.Linear(1024, self.num_classes),
             nn.ReLU())
 
-        #self.softmax = nn.Softmax(dim=1)
-
     def forward(self, x):
 
         if self.avg_modality == 'Pooling':
